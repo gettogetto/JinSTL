@@ -216,7 +216,7 @@ template<inst>
 				for(i=bytes;i<=m_maxbytes;i+=m_align){
 					suitable_list = m_freelist + freelist_index(i);
 					p=*suitable_list;
-					if(p!=0){//get the other list's memory
+					if(p!=0){//get  other list's memory
 						*suitable_list = p->next;
 						start_free = (char*)p;
 						end_free = start_free+i;
