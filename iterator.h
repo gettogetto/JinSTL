@@ -63,7 +63,7 @@ namespace jinstl {
 		typedef T&					reference;
 	};
 
-	// iterator template
+	// iterator template,every iterator we created must derived from this template
 	template <class Category, class T, class Distance = ptrdiff_t , class Pointer = T*, class Reference = T&>
 	struct iterator {
 		typedef Category	iterator_category;
@@ -96,7 +96,7 @@ namespace jinstl {
 	template <class T>
 	struct iterator_traits<const T*> {
 		typedef random_access_iterator_tag	iterator_category;
-		typedef T				value_type;
+		typedef T				value_type;//!!!
 		typedef ptrdiff_t			difference_type;
 		typedef const T*			pointer;
 		typedef const T&			reference;

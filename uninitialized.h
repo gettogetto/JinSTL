@@ -40,7 +40,7 @@ namespace jinstl{
 
 		}
 
-
+//specialized char* and wchar_t*
 	inline char *uninitialized_copy(const char *first,const char *last,char *res){
 			memmove(res,first,last-first);
 			return res+last-first;
