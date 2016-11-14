@@ -4,6 +4,7 @@
 #include"construct.h"
 #include"traits_type.h"
 #include"iterator.h"
+#include "algobase.h"
 namespace jinstl{
 
 
@@ -28,10 +29,10 @@ namespace jinstl{
 			}	
 		}	
 
-	template<class InputIterator,class ForwardItetrator,class T,class T1>
-		inline  ForwardItetrator uninitialized_copy(InputIterator first,InputIterator last,ForwardIterator res,T1*){
+	template<class InputIterator,class ForwardItetrator,class T>
+		inline  ForwardItetrator __uninitialized_copy(InputIterator first,InputIterator last,ForwardIterator res,T*){
 			typedef typename __traits_type<T>::is_POD_type is_POD_type;
-			__uninitializeds_copy_aux(first,last,res,is_POD_type());	
+			__uninitialized_copy_aux(first,last,res,is_POD_type());	
 		}
 
 	template<class InputIterator,class ForwardItetrator>
