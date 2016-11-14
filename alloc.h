@@ -8,9 +8,6 @@ namespace jinstl{
         #define __THROW_BAD_ALLOC do{cerr<<"out of memory"<<endl;exit(1);}while(0)
 	#endif
 
-	//#ifndef _ALLOC 
-	//#define _ALLOC alloc
-	//#endif
 
 	#include<stddef.h>
 	#include<stdlib.h>
@@ -112,6 +109,9 @@ namespace jinstl{
 		static void *reallocate(void *pointer,size_t old_size,size_t new_size);	
 		
 	}
+typedef __second_alloc_template<0> alloc;
+
+
 template<int inst>
 char *__second_alloc_template<inst>::start_free = 0;
 
@@ -144,7 +144,7 @@ template<inst>
 
 template<inst>
 	void __second_alloc_template<inst>::deallocate(void *pointer,size_t n){
-		if(n>128){
+		if(n>(size_t)m_maxbytes){
 			__first_alloc_template<inst>::deallocate(pointer,n);
 			return;	
 		}
@@ -153,9 +153,10 @@ template<inst>
 		*suitable_list = (listnode*)pointer;
 	}
 template<inst>
-	void *__second_alloc_template<inst>::allocate(void *pointer ,size_t oldsize,size_t newsize){
-
-
+	void *__second_alloc_template<inst>::reallocate(void *pointer ,size_t oldsize,size_t newsize){
+		deallocate(p,oldsize);
+		void *res = allocate(newsize);
+		return res;
 	}
 //get memory from pool to freelist
 template<inst>
