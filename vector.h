@@ -67,13 +67,14 @@ namespace jinstl{
 					size_type oldcapacity = capacity();
 					size_type old_element_count = size();
 					size_type new_size = old_element_count?2*old_element_count:1;
+					iterator newstart = data_allocator::allocate(new_size);
+					//every step should record the newfinish,if exception happend,destroy the constructed objs
+					iterator newfinish = newstart;
 					try{
-						iterator newstart = data_allocator::allocate(new_size);
-					
-						iterator insert_pos = uninitialized_copy(start,pos,newstart);
-						construct(insert_pos,*pos);
-						++insert_pos;
-						iterator newfinish = uninitialized_copy(pos,finish,insert_pos);
+						newfinish = uninitialized_copy(start,pos,newstart);
+						construct(newfinish,*pos);
+						++newfinish;
+						newfinish = uninitialized_copy(pos,finish,newfinish);
 					}catch(...){
 						destroy(newstart,newfinish);
 						data_allocator::deallocate(newstart,new_size);
@@ -111,29 +112,172 @@ namespace jinstl{
 			reference operator[](size_type n){
 				return *(start+n);
 			}
+
+			/*****************************************/	
 			vector():start(0),finish(0),end_of_storage(0){}	
 			vector(size_type n,const T& val){
 				fill_initialize(n,val);
 			}
 			vector(int n,const T& val){
-				fill_initialized(n,val);
+				fill_initialize(n,val);
 			}
 			vector(long n,const T& val){
-				fill_initialized(n,val);
+				fill_initialize(n,val);
 			}
 			explicit vector(size_type n){
-				fill_initialized(n,val);
+				fill_initialize(n,T());
 			}
 			~vector(){
 				destroy(start,finish);//a global function,call destruct function
 				deallocate();
 			}
-			
+			/******************************************/
+			void resize(size_type newsize,const T& val){
+				if(newsize<size()){
+					
+					erase(first+newsize,finish);
+				}
+				else{
+				
+					insert(first,newsize-size(),val);
+				}
+	
+			}
+			void resize(size_type newsize){
+				resize(newsize,T());
+			}
 
-
-			void insert(iterator pos,size_type n,const value_type& val){
+			/******************************************/
+			void push_back(const T& val){
+				if(finish!=end_of_storage){
+					construct(finish++,val);
+				}else{
+					insert_aux(finish,val);
+				}
+			}
+			void pop_back(){
+				destroy(--finish);
+			}
+			/******************************************/
+			iterator insert(iterator pos,const T& val){
+				size_type n = pos-begin();
+				if(pos==finish&&finish!=end_of_storage){
+					construct(finish,val);
+				
+				}else{
+					insert_aux(pos,val);
+				}
+				return begin()+n;
 				
 			}
+			void insert(iterator pos,size_type n,const value_type& val){
+				if(n==0) return; 
+				if(n <= end_of_storage-finish){
+					
+					size_type count = finish - pos;
+					iterator old_finish = finish;
+					if(count>n){
+						uninitialized_copy(finish-n,finish,finish);
+						finish += n;
+						copy_backward(pos,old_finish-n,old_finish);
+						uninitialized_fill(pos,n,val);
+					}else{
+						uninitialized_fill(finish,n-count,val);
+						finish+=n-count;
+						uninitialized_copy(pos,old_finish,finish);
+						finish +=count;
+						uninitialized_fill(pos,old_finish,val);
+					}
+					
+				}else{
+					size_type old_capacity = capacity();
+					size_type new_capacity = 2*(old_capacity>n?old_capacity:n);
+					iterator newstart = data_allocator::allocate(new_capacity);
+					iterator newfinish = newstart;
+				
+					//every step should record the newfinish,if exception happend,destroy the constructed objs
+					try{
+						newfinish  = uninitialized_copy(start,pos,newstart);
+						newfinish = uninitialized_fill_n(newfinish,n,val);
+						newfinish = uninitialized_copy(pos,finish,newfinish+n);
+					}catch(...){
+						destroy(newstart,newfinish);
+						data_allocator::deallocate(newstart,newstart+new_capacity);
+						throw;
+					}
+					destroy(start,finish);
+					deallocate();
+					start = newstart;
+					finish = newfinish;
+					end_of_storage = newstart + new_capacity;
+				}
+			}
+			void insert(iterator pos,const_iterator first,const_iterator last){
+				size_type n;
+				distance(first,last,n);
+				if(n==0) return;
+				if(n <= end_of_storage-finish){
+					
+					size_type count = finish - pos;
+					iterator old_finish = finish;
+					if(count>n){
+						uninitialized_copy(finish-n,finish,finish);
+						finish += n;
+						copy_backward(pos,old_finish-n,old_finish);
+						copy(first,last,pos);
+					}else{
+						finish+=n;
+						uninitialized_copy(pos,old_finish,pos+n);
+						copy(first,last,pos);
+					}
+					
+				}else{
+					size_type old_capacity = capacity();
+					size_type new_capacity = 2*(old_capacity>n?old_capacity:n);
+					iterator newstart = data_allocator::allocate(new_capacity);
+					iterator newfinish = newstart;
+				
+					//every step should record the newfinish,if exception happend,destroy the constructed objs
+					try{
+						newfinish  = uninitialized_copy(start,pos,newstart);
+						newfinish = uninitialized_copy(first,last,newfinish);
+						newfinish = uninitialized_copy(pos,finish,newfinish+n);
+					}catch(...){
+						destroy(newstart,newfinish);
+						data_allocator::deallocate(newstart,newstart+new_capacity);
+						throw;
+					}
+					destroy(start,finish);
+					deallocate();
+					start = newstart;
+					finish = newfinish;
+					end_of_storage = newstart + new_capacity;
+				}
+				
+			}
+
+			/******************************************/
+			iterator erase(iterator pos){
+				if(pos!=finish){
+					copy(pos+1,finish,pos);
+				}
+				destroy(--finish);
+				
+				return pos;
+			}
+			iterator erase(iterator first,iterator last){
+				
+				iterator tmp = copy(last,finish,first);
+				destroy(tmp,finish);
+				finish -= last - first;
+				return first;
+			}
+			void clear(){
+				destroy(start,finish);
+				finish =start;
+				
+			}
+			
 		};//namespace jinstl
 
 

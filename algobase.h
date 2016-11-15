@@ -123,8 +123,8 @@ namespace jinstl {
 //biderational_iterator_tag
 	template<class BidirectionalIterator1,class BidirectionalIterator2,class Distance>
 	inline BidirectionalIterator2 __copy_backward(BidirectionalIterator1 first,BidirectionalIterator1 last,BidirectionalIterator2 res,bidirectional_iterator_tag,Distance*){
-		for(--first,--last;first!=last;--first,--last){
-			*res = *last; 
+		while(last!=first){
+			*--res = *--last;
 		}
 		return res;
 	}
@@ -162,9 +162,8 @@ namespace jinstl {
 	//__copt_backward_t non-trivial assignment
 	template<class T>
 	inline T *__copy_backward_t(const T* first,const T* last,T* res,__false_type){
-		
-		for(--last,--res;first!=last;--last,--res){
-			*res = *last;
+		while(last!=first){
+			*--res = *--last;
 		}
 		return res;
 	}
