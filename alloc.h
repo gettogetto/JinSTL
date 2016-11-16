@@ -1,18 +1,20 @@
 #ifndef JIN_ALLOC_H_
 #define JIN_ALLOC_H_
-#include<cstdlib>
 
-namespace jinstl{
 	#ifndef __THROW_BAD_ALLOC
 	#include<iostream>
-        #define __THROW_BAD_ALLOC do{cerr<<"out of memory"<<endl;exit(1);}while(0)
+        #define __THROW_BAD_ALLOC do{std::cerr<<"out of memory"<<std::endl;exit(1);}while(0)
 	#endif
+#include<stddef.h>
+#include<stdlib.h>
+#include<string.h>
+#include<assert.h>
+
+namespace jinstl{
 
 
-	#include<stddef.h>
-	#include<stdlib.h>
-	#include<string.h>
-	#include<assert.h>
+
+
 	template<int inst>
 	class __first_alloc_template{
 	private:
@@ -35,14 +37,15 @@ namespace jinstl{
 			return res;	
 		}
 		static void (*set_malloc_handler(void (*f)))(){
-			void(*old)() = __malloc_alloc_andler;
+			void(*old)() = __malloc_alloc_handler;
 			__malloc_alloc_handler = f;	
 			return old;
 		}
-	}
-	void (*__first_alloc_template<int inst>::__malloc_alloc_handler)() = 0;
+	};
 	template<int inst>
-	void* __first_alloc_template<int inst>::oom_malloc(size_t n){
+	void (*__first_alloc_template< inst>::__malloc_alloc_handler)() = 0;
+	template<int inst>
+	void* __first_alloc_template< inst>::oom_malloc(size_t n){
 		void *res;
 		void (*handler)();
 		for(;;){
@@ -55,7 +58,7 @@ namespace jinstl{
 	}
 
 	template<int inst>
-	void* __first_alloc_template<int inst>::oom_realloc(void* pointer,size_t n){
+	void* __first_alloc_template< inst>::oom_realloc(void* pointer,size_t n){
 		void *res;
 		void (*handler)();
 		for(;;){
@@ -74,11 +77,20 @@ namespace jinstl{
 	template<int inst>
 	class __second_alloc_template{
 	private:
-		static const m_align = 8;
-		static const m_maxbytes = 128;
-		static const m_freelists_num= 16;
+
+//union save space
+		union listnode{
+			union listnode* next;
+			char client_data[1];
+		
+		};
+
+
+		static const int m_align = 8;
+		static const int m_maxbytes = 128;
+		static const int m_freelists_num= 16;
 		//16 freelists for 8 16 24 32 40 48 56 64 72 80 88 96 104 112 120 128 bytes
-		static listnode* volatile m_freelist[m_freelists_num];
+		static  listnode* volatile m_freelist[m_freelists_num];
 		//round up to 8 times
 		static size_t round_up(size_t bytes){
 			size_t new_bytes = (bytes+m_align-1)&~(m_align-1);
@@ -90,12 +102,7 @@ namespace jinstl{
 		}
 			
 	private:
-//union save space
-		union listnode{
-			union listnode* next;
-			char client_data[1];
-		
-		}
+
 		
 		static void *refill(size_t n);
 		static char *chunk_alloc(size_t size,int &nobjs);
@@ -104,11 +111,42 @@ namespace jinstl{
 		static char *end_free;//memory pool end
 		static size_t heap_size;
 	public:
-		static void *allocate(size_t n);
-		static void *deallocate(void *pointer,size_t n);
-		static void *reallocate(void *pointer,size_t old_size,size_t new_size);	
 		
-	}
+			static void *allocate(size_t n){
+				if(n>(size_t)m_maxbytes){
+					return __first_alloc_template<inst>::allocate(n);	
+				}
+				//find the suitable list
+				listnode * volatile *suitable_list=m_freelist+freelist_index(n);
+				listnode *res = *suitable_list;
+				if(res == 0){
+					void *r = refill(round_up(n));
+					return r;
+				}
+				*suitable_list = res->next;
+				return res;
+			}
+
+
+
+		
+			static void deallocate(void *pointer,size_t n){
+				if(n>(size_t)m_maxbytes){
+					__first_alloc_template<inst>::deallocate(pointer,n);
+					return;	
+				}
+				listnode * volatile *suitable_list=m_freelist + freelist_index(n);
+				((listnode*)pointer)->next=*suitable_list;
+				*suitable_list = (listnode*)pointer;
+			}
+		
+			static void *reallocate(void *pointer ,size_t oldsize,size_t newsize){
+				deallocate(pointer,oldsize);
+				void *res = allocate(newsize);
+				return res;
+			}
+		
+	};
 typedef __second_alloc_template<0> alloc;
 
 
@@ -122,49 +160,17 @@ template<int inst>
 size_t __second_alloc_template<inst>::heap_size = 0;
 
 template<int inst>
-__second_alloc_template<inst>::listnode * volatile __second_alloc_template<inst>::m_freelist[m_freelist_num]={0};
-
-template<inst>
-	void *__second_alloc_template<inst>::allocate(size_t n){
-		if(n>(size_t)m_maxbytes){
-			return __first_alloc_template<inst>::allocate(n);	
-		}
-		//find the suitable list
-		listnode *volatile *suitable_list=m_freelist+freelist_index(n);
-		listnode *res = *suitable_list;
-		if(res == 0){
-			void *r = refill(round_up(n));
-			return r;
-		}
-		*suitable_list = res->next;
-		return res;
-	}
+typename __second_alloc_template<inst>::listnode * volatile 
+__second_alloc_template<inst>::m_freelist[__second_alloc_template<inst>::m_freelists_num]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 
-
-template<inst>
-	void __second_alloc_template<inst>::deallocate(void *pointer,size_t n){
-		if(n>(size_t)m_maxbytes){
-			__first_alloc_template<inst>::deallocate(pointer,n);
-			return;	
-		}
-		listnode *volatile *suitable_list=m_freelist + freelist_index(n);
-		((listnode*)pointer)->next=*suitable_list;
-		*suitable_list = (listnode*)pointer;
-	}
-template<inst>
-	void *__second_alloc_template<inst>::reallocate(void *pointer ,size_t oldsize,size_t newsize){
-		deallocate(p,oldsize);
-		void *res = allocate(newsize);
-		return res;
-	}
 //get memory from pool to freelist
-template<inst>
+template<int inst>
 	void *__second_alloc_template<inst>::refill(size_t n){//n is 8(m_align) times bytes
 		int nobjs = 20;
 		//alloc nobjs blocks,every block is n bytes
 		char *chunk = chunk_alloc(n,nobjs);
-		listnode *volatile *suitable_list;
+		typename __second_alloc_template<inst>::listnode * volatile *suitable_list;
 		listnode *res;
 		listnode *cur_node,*next_node;
 		int i;
@@ -178,18 +184,18 @@ template<inst>
 				cur_node->next = 0;
 				break;
 			}
-			next_node = (char*)next_node+n;
+			next_node = (listnode*)((char*)next_node+n);
 			cur_node->next = next_node;
 			cur_node = cur_node->next;		
 		}
 		return res;
 	}
 //get memory from pool 
-template<inst>
-	void *__second_alloc_template<inst>::chunk_alloc(size_t bytes,int& nobjs){
+template<int inst>
+	char *__second_alloc_template<inst>::chunk_alloc(size_t bytes,int& nobjs){
 		size_t totalsize = bytes*nobjs;
 		size_t bytesleft = end_free - start_free;
-		void *res;
+		char *res;
 		if(bytesleft>=totalsize){
 			res = start_free;
 			start_free+=totalsize;
@@ -204,7 +210,7 @@ template<inst>
 			size_t bytes_alloc = totalsize*2+round_up(heap_size>>4);
 			//take the unuse-less-than-bytes-memory to freelist
 			if(bytesleft>0){
-				listnode *volatile *suitable_list=m_freelist+freelist_index(bytesleft);
+				typename __second_alloc_template<inst>::listnode * volatile *suitable_list=m_freelist+freelist_index(bytesleft);
 				listnode* cur=*suitable_list;
 				((listnode*)start_free)->next = cur;
 				*suitable_list=(listnode*)start_free;
@@ -212,7 +218,7 @@ template<inst>
 			//alloc heap memory to give pool
 			start_free=(char*)malloc(bytes_alloc);
 			if(start_free==0){//malloc failed
-				listnode *volatile *suitable_list,*p;
+				typename __second_alloc_template<inst>::listnode *volatile *suitable_list,*p;
 				int i;
 				for(i=bytes;i<=m_maxbytes;i+=m_align){
 					suitable_list = m_freelist + freelist_index(i);
@@ -226,7 +232,7 @@ template<inst>
 				}
 				end_free=0;//all ways try but no enough memory
 				//ask for the first_alloc_template
-				start_free = __first_alloc_template<inst>::allocate(bytes_alloc);			
+				start_free = (char*)__first_alloc_template<inst>::allocate(bytes_alloc);			
 			}
 			heap_size+=bytes_alloc;
 			end_free = start_free+bytes_alloc;
@@ -253,6 +259,6 @@ template<inst>
 		static void deallocate(void *pointer,size_t n){
 			if(n!=0) Alloc::deallocate(pointer,sizeof(T)*n);
 		}
-	}
-}
+	};
+};
 #endif//JIN_ALLOC_H_

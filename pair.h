@@ -10,7 +10,7 @@ namespace jinstl{
 
 				T1 first;
 				T2 second;
-		}
+		};
 	template<class T1,class T2>
 		inline bool operator == (const pair<T1,T2>& p1,const pair<T1,T2>& p2){
 			return p1.first==p2.first&&p1.second==p2.second;

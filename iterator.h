@@ -3,7 +3,7 @@
 
 
 #include <stddef.h>	//for ptrdiff_t
-
+#include"type_traits.h"
 namespace jinstl {
 
 	// 5 kind of iterator
@@ -136,7 +136,7 @@ namespace jinstl {
 	template <class InputIterator>
 	inline typename iterator_traits<InputIterator>::difference_type
 		__distance(InputIterator first, InputIterator last, input_iterator_tag) {
-        	typename iterator_traits<Inputerator>::difference_type n = 0;
+        	typename iterator_traits<InputIterator>::difference_type n = 0;
 		while(first!=last){
 			++first;
 			++n;
@@ -180,7 +180,7 @@ namespace jinstl {
 	}
 }
 
-#include "reverse_iterator.h"	//  reverse_iterator
+//#include "reverse_iterator.h"	//  reverse_iterator
 
 #endif // JINSTL_ITERATOR_H_
 

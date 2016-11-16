@@ -2,7 +2,7 @@
 #define JIN_UNINITIALIZED_H
 #include<string.h>
 #include"construct.h"
-#include"traits_type.h"
+#include"type_traits.h"
 #include"iterator.h"
 #include "algobase.h"
 namespace jinstl{
@@ -10,13 +10,13 @@ namespace jinstl{
 
 
 
-	template<class 	InputIterator,class ForwardItetrator>
-		inline ForwardItetrator __uninitialized_copy_aux(InputIterator first,InputIterator last,ForwardIterator res,__true_type){
+	template<class 	InputIterator,class ForwardIterator>
+		inline ForwardIterator __uninitialized_copy_aux(InputIterator first,InputIterator last,ForwardIterator res,__true_type){
 			return copy(first,last,res);
 		}	
 
-	template<class InputIterator,class ForwardItetrator>
-		inline ForwardItetrator __uninitialized_copy_aux(InputIterator first,InputIterator last,ForwardIterator res,__false_type){
+	template<class InputIterator,class ForwardIterator>
+		inline ForwardIterator __uninitialized_copy_aux(InputIterator first,InputIterator last,ForwardIterator res,__false_type){
 			ForwardIterator cur = res;
 			try{
 				for(;first!=last;++first,++cur){
@@ -29,26 +29,26 @@ namespace jinstl{
 			}	
 		}	
 
-	template<class InputIterator,class ForwardItetrator,class T>
-		inline  ForwardItetrator __uninitialized_copy(InputIterator first,InputIterator last,ForwardIterator res,T*){
-			typedef typename __traits_type<T>::is_POD_type is_POD_type;
-			__uninitialized_copy_aux(first,last,res,is_POD_type());	
+	template<class InputIterator,class ForwardIterator,class T>
+		inline  ForwardIterator __uninitialized_copy(InputIterator first,InputIterator last,ForwardIterator res,T*){
+			typedef typename __type_traits<T>::is_POD_type is_POD_type;
+			return __uninitialized_copy_aux(first,last,res,is_POD_type());	
 		}
 
-	template<class InputIterator,class ForwardItetrator>
-		 inline ForwardItetrator uninitialized_copy(InputIterator first,InputIterator last,ForwardIterator res){
-			return __uninitializeds_copy(first,last,res,value_type(first));	
+	template<class InputIterator,class ForwardIterator>
+		 inline ForwardIterator uninitialized_copy(InputIterator first,InputIterator last,ForwardIterator res){
+			return __uninitialized_copy(first,last,res,value_type(first));	
 
 		}
 
 //specialized char* and wchar_t*
 	inline char *uninitialized_copy(const char *first,const char *last,char *res){
 			memmove(res,first,last-first);
-			return res+last-first;
+			return res+(last-first);
 		}
 	inline wchar_t *uninitialized_copy(const wchar_t *first,const wchar_t *last,wchar_t *res){
 			memmove(res,first,(last-first)*sizeof(wchar_t));
-			return res+last-first;
+			return res+(last-first);
 		}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	template<class ForwardIterator,class T>

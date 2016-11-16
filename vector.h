@@ -8,7 +8,7 @@
 #include "uninitialized.h"
 #include "construct.h"
 namespace jinstl{
-	template<class T,class Alloc = alloc>
+	template<class T,class Alloc = alloc>//__second_alloc_template<0>
 		class vector{
 		public:	
 			//vector iterator is T*
@@ -64,27 +64,27 @@ namespace jinstl{
 					copy_backward(pos,finish-2,finish-1);
 					*pos = val;
 				}else{
-					size_type oldcapacity = capacity();
+					
 					size_type old_element_count = size();
-					size_type new_size = old_element_count?2*old_element_count:1;
-					iterator newstart = data_allocator::allocate(new_size);
+					size_type new_capacity = old_element_count?2*old_element_count:1;
+					iterator newstart = data_allocator::allocate(new_capacity);
 					//every step should record the newfinish,if exception happend,destroy the constructed objs
 					iterator newfinish = newstart;
 					try{
 						newfinish = uninitialized_copy(start,pos,newstart);
-						construct(newfinish,*pos);
+						construct(newfinish,val);
 						++newfinish;
 						newfinish = uninitialized_copy(pos,finish,newfinish);
 					}catch(...){
 						destroy(newstart,newfinish);
-						data_allocator::deallocate(newstart,new_size);
+						data_allocator::deallocate(newstart,new_capacity);
 						throw;
 					}
 					destroy(start,finish);
 					deallocate();	
 					start = newstart;
 					finish = newfinish;
-					end_of_storage = start + new_size; 
+					end_of_storage = start + new_capacity; 
 				}	
 			}
 		public:
@@ -135,11 +135,11 @@ namespace jinstl{
 			void resize(size_type newsize,const T& val){
 				if(newsize<size()){
 					
-					erase(first+newsize,finish);
+					erase(start+newsize,finish);
 				}
 				else{
 				
-					insert(first,newsize-size(),val);
+					insert(start,newsize-size(),val);
 				}
 	
 			}
@@ -180,18 +180,18 @@ namespace jinstl{
 						uninitialized_copy(finish-n,finish,finish);
 						finish += n;
 						copy_backward(pos,old_finish-n,old_finish);
-						uninitialized_fill(pos,n,val);
+						fill(pos,pos+n,val);
 					}else{
 						uninitialized_fill(finish,n-count,val);
 						finish+=n-count;
 						uninitialized_copy(pos,old_finish,finish);
 						finish +=count;
-						uninitialized_fill(pos,old_finish,val);
+						fill(pos,old_finish,val);
 					}
 					
 				}else{
 					size_type old_capacity = capacity();
-					size_type new_capacity = 2*(old_capacity>n?old_capacity:n);
+					size_type new_capacity = old_capacity+(old_capacity>n?old_capacity:n);
 					iterator newstart = data_allocator::allocate(new_capacity);
 					iterator newfinish = newstart;
 				
@@ -214,7 +214,7 @@ namespace jinstl{
 			}
 			void insert(iterator pos,const_iterator first,const_iterator last){
 				size_type n;
-				distance(first,last,n);
+				n=distance(first,last);
 				if(n==0) return;
 				if(n <= end_of_storage-finish){
 					
@@ -233,7 +233,7 @@ namespace jinstl{
 					
 				}else{
 					size_type old_capacity = capacity();
-					size_type new_capacity = 2*(old_capacity>n?old_capacity:n);
+					size_type new_capacity = old_capacity+(old_capacity>n?old_capacity:n);
 					iterator newstart = data_allocator::allocate(new_capacity);
 					iterator newfinish = newstart;
 				
@@ -241,10 +241,10 @@ namespace jinstl{
 					try{
 						newfinish  = uninitialized_copy(start,pos,newstart);
 						newfinish = uninitialized_copy(first,last,newfinish);
-						newfinish = uninitialized_copy(pos,finish,newfinish+n);
+						newfinish = uninitialized_copy(pos,finish,newfinish);
 					}catch(...){
 						destroy(newstart,newfinish);
-						data_allocator::deallocate(newstart,newstart+new_capacity);
+						data_allocator::deallocate(newstart,new_capacity);
 						throw;
 					}
 					destroy(start,finish);
@@ -255,7 +255,6 @@ namespace jinstl{
 				}
 				
 			}
-
 			/******************************************/
 			iterator erase(iterator pos){
 				if(pos!=finish){
@@ -277,9 +276,32 @@ namespace jinstl{
 				finish =start;
 				
 			}
-			
-		};//namespace jinstl
-
+			/**************************************************/
+			void swap(vector<T,Alloc>&v){
+				swap(start,v.begin());
+				swap(finish,v.end());
+				swap(end_of_storage,v.end_of_storage);
+			}
+		};	
+		template<class T,class Alloc>
+		inline bool operator==(const vector<T,Alloc>& v1,const vector<T,Alloc>&v2){
+			return v1.size()==v2.size() && equal(v1.begin(),v1.end(),v2.begin());
+		}		
+		template<class T,class Alloc>
+		inline bool operator<(const vector<T,Alloc>&v1,const vector<T,Alloc>&v2){
+			return lexicographical_compare(v1.begin(),v1.end(),v2.begin(),v2.end());
+		}
+		//template<class T,class Alloc>
+		//inline bool operator>()(const vector<T,Alloc>&v1,const vector<T,Alloc>&v2){
+			  
+		//	return !lexicographical_compare(v1.begin(),v1.end(),v2.begin(),v2.end());
+		//}
+		
+		template<class T,class Alloc>
+		inline void swap(vector<T,Alloc>& v1,vector<T,Alloc>& v2){
+			v1.swap(v2);
+		}
+};//namespace jinstl
 
 
 #endif//JIN_VECTOR_H_

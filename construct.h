@@ -2,7 +2,7 @@
 #define JIN_CONSTRUCT_H
 
 
-#include<new.h>//for placement new
+#include<new>//for placement new
 #include"type_traits.h"
 namespace jinstl{
 	template <class T1,class T2>
@@ -29,7 +29,7 @@ namespace jinstl{
 		}
 	template <class ForwardIterator,class T>
 		inline void __destroy(ForwardIterator first,ForwardIterator last,T*){
-			typedef typename type_traits<ForwardIterator>::has_trivial_destructor trivial_destructor;
+			typedef typename __type_traits<ForwardIterator>::has_trivial_destructor trivial_destructor;
 			__destroy_aux(first,last,trivial_destructor());
 
 		}

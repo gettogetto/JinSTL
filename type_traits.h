@@ -2,7 +2,7 @@
 #define JIN_TYPE_TRAITS_H_
 
 
-namespace JinSTL {
+namespace jinstl {
 
 	struct __true_type {};
 	struct __false_type {};
