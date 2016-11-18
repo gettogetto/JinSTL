@@ -17,7 +17,7 @@ namespace jinstl{
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	template <class ForwardIterator>
 		inline void __destroy_aux(ForwardIterator first,ForwardIterator last,__false_type){
-			while(first<last){
+			while(first!=last){
 				destroy(&*first);
 				++first;
 			}

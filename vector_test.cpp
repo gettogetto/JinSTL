@@ -1,5 +1,6 @@
 #include<iostream>
 #include"vector.h"
+
 #define out() for(int i=0;i<(int)v.size();i++) std::cout<<*(v.begin()+i);std::cout<<"capacity="<<v.capacity()<<std::endl
 using namespace jinstl;
 int main(){
