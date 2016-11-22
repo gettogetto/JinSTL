@@ -20,15 +20,19 @@ struct list_node{
 
 template <class T, class Ref, class Ptr>
 	struct list_iterator : public iterator<bidirectional_iterator_tag, T> {
+		typedef bidirectional_iterator_tag i	terator_category;
+		typedef T				value_type;
+		typedef ptrdiff_t 			difference_type;
+		typedef Ptr				pointer;
+		typedef Ref				reference;
+		
+
 		typedef list_iterator<T, T&, T*>	iterator;
 		typedef list_iterator<T, const T&, const T*>	const_iterator;
 		typedef list_iterator<T, Ref, Ptr>	self;
-		typedef bidirectional_iterator_tag iterator_category;
-		typedef T	value_type;
-		typedef Ptr	pointer;
-		typedef Ref	reference;
 		typedef size_t size_type;
-		typedef ptrdiff_t difference_type;
+		
+		
 		list_node<T>*	m_node;//one list one empty node	
 
 		list_iterator() {}
@@ -105,15 +109,8 @@ template <class T, class Alloc = alloc>
 
 		list& operator=(const list& rhs){
 			if(this == &rhs) return *this;
-			iterator first1=begin(),last1=end(),first2=rhs.begin(),last2=rhs.end();
-			while(first1!=last1&&first2!=last2){
-				*first1++=*first2++;
-			}
-			if(first2==last2){
-				erase(first1,last1);
-			}else{
-				insert(first1,first2,last2);			
-			}
+			__empty_initialize();
+			m_node = rhs.m_node;
 			return *this;
 		}
 		list& operator=(list&& rhs){
@@ -163,7 +160,12 @@ template <class T, class Alloc = alloc>
 			newnode->pre = prenode;
 			
 			return iterator(newnode);
-	
+			/*list_node<T>* tmp = __create_node(val);
+			tmp->next = pos.m_node;
+			tmp->pre = pos.m_node->pre;
+			pos.m_node->pre->next = tmp;
+			pos.m_node->pre = tmp;
+			return tmp;*/
 		}
 		iterator insert(iterator position) { return insert(position, T()); }
 		
@@ -182,7 +184,11 @@ template <class T, class Alloc = alloc>
 
 		}
 		iterator erase(iterator position){
-	
+			/*iterator res =iterator(pos.m_node->next);
+			pos.m_node->pre->next = pos.m_node->next;
+			pos.m_node->next->pre = pos.m_node->pre;
+			__destroy_node(pos.m_node);
+			return res;*/
 			list_node<T>* prev_node = position.m_node->pre;
 			list_node<T>* next_node = position.m_node->next;
 			list_node<T>* this_node = position.m_node;
@@ -192,7 +198,7 @@ template <class T, class Alloc = alloc>
 			return iterator(next_node);
 		}
 		iterator erase(iterator first, iterator last){
-			list_node<T>* firstpre = first.m_node->pre;
+			/*list_node<T>* firstpre = first.m_node->pre;
 			list_node<T>* lastpre = last.m_node->pre;
 			firstpre->next=last.m_node;
 			last.m_node->pre = firstpre;
@@ -204,9 +210,9 @@ template <class T, class Alloc = alloc>
 				}
 				__destroy_node(first.m_node);
 				first++;
-			}	
-			//while(first!=last)  erase(first++);
-			//return last;
+			}	*/
+			while(first!=last)  erase(first++);
+			return last;
 
 		}
 		void clear(){
@@ -230,9 +236,7 @@ template <class T, class Alloc = alloc>
 					insert(end(),x);
 				}
 			}else{
-				iterator tmp = begin();
-				while(new_size--) tmp++;
-				erase(tmp,end());
+				erase(begin()+new_size,end());
 			}
 			
 		}
@@ -263,7 +267,7 @@ template <class T, class Alloc = alloc>
 					}else{
 						it = erase(it);	
 					}
-					
+					break;
 				}
 			}
 		}
@@ -325,7 +329,7 @@ template <class T, class Alloc = alloc>
 		}
 //list can not use stl sort() which is for randomiterator ,list uses own sort
 		void sort(){
-			if(m_node->next==m_node||m_node->next->next==m_node) return ;
+			if(m_node->next=m_node||m_node->next->next==m_node) return ;
 			list<T,Alloc> carry;
 			list<T,Alloc> counter[64];
 			int fill = 0;
@@ -384,7 +388,8 @@ template <class T, class Alloc = alloc>
 				throw;
 			}
 		}
-
+		//template <class Integer>
+		//void __assign_dispatch(Integer n, Integer value, __true_type);
 		template <class InputIterator>
 		void __range_initialize(InputIterator first, InputIterator last){
 			__empty_initialize();
@@ -406,18 +411,32 @@ template <class T, class Alloc = alloc>
 		void __insert_dispatch(iterator position, InputIterator first, InputIterator last, __false_type);
 		//move [first,last) to [pos-(last-first),pos ),and [first last) will be empty
 		void __transfer(iterator pos, iterator first, iterator last){
-			if(pos == last ) return ;
+			/*if(pos == first ) return ;
 			list_node<T>* pos_pre_node = pos.m_node->pre;
 			list_node<T>* last_pre_node = last.m_node->pre;
 			list_node<T>* first_pre_node = first.m_node->pre;
 
 			last_pre_node->next = pos.m_node;
 			first_pre_node->next = last.m_node;
-			pos_pre_node->next = first.m_node;
-			pos.m_node->pre = last_pre_node;
-			last.m_node->pre = first_pre_node;
-			first.m_node->pre = pos_pre_node;
 
+			pos_pre_node->next = first.m_node;
+			pos.m_node->next = last_pre_node;
+			last.m_node->pre = first_pre_node;
+
+			first.m_node->pre = first_pre_node;*/
+			if (pos != last) {
+				
+				last.m_node->pre->next = pos.m_node;
+				first.m_node->pre->next = last.m_node;
+				pos.m_node->pre->next = first.m_node;
+				
+				list_node<T>* tmp = pos.m_node->pre;
+				pos.m_node->pre = last.m_node->pre;
+				last.m_node->pre = first.m_node->pre;
+				first.m_node->pre = tmp;
+		
+			
+			}
 		}
 	};
 
