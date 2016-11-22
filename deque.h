@@ -171,16 +171,14 @@ namespace jinstl {
 	private:
 		typedef T**	map_pointer;
 
-		// 以下四个数据来表现一个 deque
 		iterator start;	
 		iterator finish;	//finish.cur is reserve for probably use
 		map_pointer map;	//map is T** pointer to many buf	
 		size_type map_size;	//map size
 
-		enum { initial_map_size = 8 };	// map_ 的初始化大小
+		enum { initial_map_size = 8 };	
 
 	public:
-		// 构造、复制、移动、析构函数
 		deque():start(),finish(),map(0),map_size(0) {__create_map_and_nodes(0);}
 		deque(size_type n, const T& val) {__fill_initialize(n,val); }
 		explicit deque(size_type n):start(),finish(),map(0),map_size(0) { __fill_initialize(n,T());}
