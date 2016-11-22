@@ -147,7 +147,7 @@ namespace jinstl{
 			}
 		
 	};
-typedef __second_alloc_template<0> alloc;
+typedef __second_alloc_template<0> alloc;//!!!!
 
 
 template<int inst>

@@ -146,7 +146,16 @@ namespace jinstl{
 			void resize(size_type newsize){
 				resize(newsize,T());
 			}
-
+			void reserve(size_type n){
+				if(n<capacity) return;
+				size_type oldsize = size();
+				iterator newstart = allocate_and_copy(n,start,finish);
+				destroy(start,finish);
+				deallocate();
+				start=newstart;
+				finish=start+old_size;
+				end_of_storage=start + n;
+			}
 			/******************************************/
 			void push_back(const T& val){
 				if(finish!=end_of_storage){
