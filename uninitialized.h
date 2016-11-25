@@ -79,23 +79,23 @@ namespace jinstl{
 		}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class ForwardIterator,class T,class InputIterator>
-inline ForwardInputIterator __uninitialized_fill_copy(ForwardItIterator res,ForwardItIterator mid,const T& x,InputIterator first,InputIterator last){
+inline ForwardIterator __uninitialized_fill_copy(ForwardIterator res,ForwardIterator mid,const T& x,InputIterator first,InputIterator last){
 	uninitialized_fill(res,mid,x);
 	try{
 		return uninitialized_copy(first,last,mid);
-	}catch{
+	}catch(...){
 		destroy(res,mid);
 	}
 
 
 }
 
-template<class InputIterator,class ForwardIterator,class T,class T>
-inline void __uninitialized_copy_fill(InputIterator first1,InputIterator last1,InputIterator first2,InputIterator last2,const T& x){
+template<class InputIterator,class ForwardIterator,class T>
+inline void __uninitialized_copy_fill(InputIterator first1,InputIterator last1,ForwardIterator first2,ForwardIterator last2,const T& x){
 	ForwardIterator mid2 = uninitialized_copy(first1,last1,first2);
 	try{
 		uninitialized_fill(mid2,last2,x);
-	}catch{
+	}catch(...){
 		destroy(first2,mid2);
 	}
 

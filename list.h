@@ -20,7 +20,7 @@ struct list_node{
 
 template <class T, class Ref, class Ptr>
 	struct list_iterator : public iterator<bidirectional_iterator_tag, T> {
-		typedef bidirectional_iterator_tag i	terator_category;
+		typedef bidirectional_iterator_tag 	iterator_category;
 		typedef T				value_type;
 		typedef ptrdiff_t 			difference_type;
 		typedef Ptr				pointer;
@@ -53,7 +53,7 @@ template <class T, class Ref, class Ptr>
 			return tmp;
 		}
 		self& operator--() {
-			m_node = m_node->prev;
+			m_node = m_node->pre;
 			return *this;
 		}
 		self operator--(int) {
