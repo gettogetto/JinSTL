@@ -19,5 +19,5 @@ int main(){
 	std::cout<<s.top()<<std::endl;
 	s.pop();
 	std::cout<<s.empty()<<std::endl;
-
+	std::cout<<(s==s)<<std::endl;
 }
