@@ -30,7 +30,7 @@ namespace jinstl{
 	private:
 		Container _container;
 		
-		friend bool operator == (const stack &s1,const stack &s2){
+		/*friend bool operator == (const stack &s1,const stack &s2){
 
 			return s1._container==s2._container;
 		}
@@ -43,10 +43,24 @@ namespace jinstl{
 		friend bool operator <(const stack&s1,const stack &s2){
 
 			return s1._container<s2._container;
-		}
+		}*/
 
 	};//class stack
+		template<class T,class Container>
+ 		bool operator == (const stack<T,Container> &s1,const stack<T,Container> &s2){
 
+			return s1._container==s2._container;
+		}
+		template<class T,class Container>
+		 bool operator != (const stack<T,Container> &s1,const stack<T,Container> &s2){
+
+			return !(s1==s2);
+		}
+		template<class T,class Container>
+		 bool operator <(const stack<T,Container> &s1,const stack<T,Container> &s2){
+
+			return s1._container<s2._container;
+		}
 
 }//namespace jinstl
 #endif

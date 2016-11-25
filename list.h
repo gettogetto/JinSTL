@@ -236,7 +236,9 @@ template <class T, class Alloc = alloc>
 					insert(end(),x);
 				}
 			}else{
-				erase(begin()+new_size,end());
+				iterator i=begin();
+				while(new_size--) i++; 
+				erase(i,end());
 			}
 			
 		}
@@ -329,7 +331,7 @@ template <class T, class Alloc = alloc>
 		}
 //list can not use stl sort() which is for randomiterator ,list uses own sort
 		void sort(){
-			if(m_node->next=m_node||m_node->next->next==m_node) return ;
+			if(m_node->next==m_node||m_node->next->next==m_node) return ;
 			list<T,Alloc> carry;
 			list<T,Alloc> counter[64];
 			int fill = 0;
@@ -439,6 +441,44 @@ template <class T, class Alloc = alloc>
 			}
 		}
 	};
+	template <class T, class Alloc>
+	inline bool operator==(const list<T, Alloc>& lhs, const list<T, Alloc>& rhs) {
+		typedef typename list<T, Alloc>::const_iterator const_iterator;
+		const_iterator first1 = lhs.begin();
+		const_iterator first2 = rhs.begin();
+		const_iterator last1 = lhs.end();
+		const_iterator last2 = rhs.end();
+		while (first1 != last1 && first2 != last2 && *first1 == *first2) {
+			++first1;
+			++first2;
+		}
+		return first1 == last1 && first2 == last2;
+	}
+
+	template <class T, class Alloc>
+	inline bool operator<(const list<T, Alloc>& lhs, const list<T, Alloc>& rhs) {
+		return jinstl::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+	}
+
+	template <class T, class Alloc>
+	inline bool operator!=(const list<T, Alloc>& lhs, const list<T, Alloc>& rhs) {
+		return !(lhs == rhs);
+	}
+
+	template <class T, class Alloc>
+	inline bool operator>(const list<T, Alloc>& lhs, const list<T, Alloc>& rhs) {
+		return rhs < lhs;
+	}
+
+	template <class T, class Alloc>
+	inline bool operator<=(const list<T, Alloc>& lhs, const list<T, Alloc>& rhs) {
+		return !(rhs < lhs);
+	}
+
+	template <class T, class Alloc>
+	inline bool operator>=(const list<T, Alloc>& lhs, const list<T, Alloc>& rhs) {
+		return !(lhs < rhs);
+	}
 
 }
 #endif

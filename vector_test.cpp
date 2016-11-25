@@ -1,19 +1,19 @@
 #include<iostream>
 #include"vector.h"
 
-#define out() for(int i=0;i<(int)v.size();i++) std::cout<<*(v.begin()+i);std::cout<<"capacity="<<v.capacity()<<std::endl
+#define out(v) for(int i=0;i<(int)v.size();i++) std::cout<<*(v.begin()+i);std::cout<<"capacity="<<v.capacity()<<std::endl
 using namespace jinstl;
 int main(){
 	vector<int> v(1),v2(10,5);
-	out();
+	out(v);
 	v.pop_back();
-	out();
+	out(v);
 	v.insert(v.begin(),7);
-	out();
+	out(v);
 	v.insert(v.begin(),v2.begin(),v2.end());
-	out();
+	out(v);
 	for(int i=0;i<10;i++) v.push_back(9-i);
-	out();
+	out(v);
 	return 0;	
 
 }

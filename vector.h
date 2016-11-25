@@ -7,6 +7,7 @@
 #include "type_traits.h"
 #include "uninitialized.h"
 #include "construct.h"
+#include<initializer_list>
 namespace jinstl{
 	template<class T,class Alloc = alloc>//__second_alloc_template<0>
 		class vector{
@@ -115,6 +116,10 @@ namespace jinstl{
 
 			/*****************************************/	
 			vector():start(0),finish(0),end_of_storage(0){}	
+			//vector(std::initializer_list<T> list){
+				//reserve(list.size());
+				//insert(begin(),list.begin(),list.end());
+			//}			
 			vector(size_type n,const T& val){
 				fill_initialize(n,val);
 			}
@@ -147,13 +152,13 @@ namespace jinstl{
 				resize(newsize,T());
 			}
 			void reserve(size_type n){
-				if(n<capacity) return;
+				if(n<capacity()) return;
 				size_type oldsize = size();
 				iterator newstart = allocate_and_copy(n,start,finish);
 				destroy(start,finish);
 				deallocate();
 				start=newstart;
-				finish=start+old_size;
+				finish=start+oldsize;
 				end_of_storage=start + n;
 			}
 			/******************************************/

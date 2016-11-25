@@ -269,11 +269,11 @@ inline int lexicographical_compare_3way(InputIterator1 first1,InputIterator1 las
 		t2 = tmp;
 	}
 	template<class T>
-	inline const T& max(T& t1,T& t2){
+	inline const T& max(const T& t1,const T& t2){
 		return t1<t2?t2:t1;	
 	}
 	template<class T>
-	inline const T& min(T& t1,T& t2){
+	inline const T& min(const T& t1,const T& t2){
 		return t1<t2?t1:t2;
 	}
 	template<class T,class compare>

@@ -17,5 +17,9 @@ int main(){
 	l1.merge(l3);out(l1);
 	l1.resize(20,0);out(l1);
 	l1.resize(5);out(l1);
+	
+	jinstl::list<int> l4(a,a+6);
+	jinstl::list<int> l5(a,a+6);
+	std::cout<<(l4==l5)<<std::endl;
 
 }

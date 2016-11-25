@@ -4,7 +4,10 @@
 
 
 #include "iterator.h"
-#include "memory.h"
+#include "alloc.h"
+#include"algobase.h"
+#include"construct.h"
+#include"uninitialized.h"
 
 namespace jinstl {
 
@@ -65,7 +68,7 @@ namespace jinstl {
 		pointer operator->() const { return cur; }
 
 		difference_type operator-(const self& x) const {
-			difference_type res = (cur-first)+(node-x.node-1)*buf_size()+(x.last-x.cur);
+			difference_type res = (cur-first)+(node-x.node-1)*buffer_size()+(x.last-x.cur);
 			return res;
 		}
 
@@ -179,28 +182,28 @@ namespace jinstl {
 		enum { initial_map_size = 8 };	
 
 	public:
-		deque():start(),finish(),map(0),map_size(0) {__create_map_and_nodes(0);}
+		deque():start(),finish(),map(0),map_size(0) {this->__create_map_and_nodes(0);}
 		deque(size_type n, const T& val) {__fill_initialize(n,val); }
 		explicit deque(size_type n):start(),finish(),map(0),map_size(0) { __fill_initialize(n,T());}
 		template <class InputIterator>
 		deque(InputIterator first, InputIterator last){
-			__create_map_and_nodes(size_type(last - first));
+			this->__create_map_and_nodes(size_type(last - first));
 			
 			try{
-				uninitialize_copy(first,last,start);
+				uninitialized_copy(first,last,start);
 			}catch(...){
-				__destroy_map_and_nodes();
+				this->__destroy_map_and_nodes();
 				throw;
 			}	
 
 		}
 
 		deque(const deque& rhs){
-			__create_map_and_nodes(rhs.size());
+			this->__create_map_and_nodes(rhs.size());
 			try{
 				uninitialize_copy(rhs.start,rhs.finish,start);
 			}catch(...){
-				__destroy_map_and_nodes();
+				this->__destroy_map_and_nodes();
 				throw;
 			}	
 		}
@@ -211,7 +214,7 @@ namespace jinstl {
 
 		~deque(){
 			destroy(start,finish);
-			__destroy_map_and_nodes();	
+			this->__destroy_map_and_nodes();	
 		}
 
 	public:
@@ -226,7 +229,7 @@ namespace jinstl {
 
 		bool empty() const {return start==finish; }
 		size_type size() const {return size_type(finish-start);}
-	//	size_type max_size() const { }
+		size_type max_size() const { return size_type(-1);}
 
 		reference front() {return *start; }
 		const_reference front() const { return *start;}
@@ -261,11 +264,11 @@ namespace jinstl {
 		iterator insert(iterator pos) {insert(pos,T());}
 		void insert(iterator pos, size_type n, const T& val){
 			if(pos.cur==start.cur){
-				iterator new_start = __reserve_elements_at_front(n);
+				iterator new_start = this->__reserve_elements_at_front(n);
 				uninitialized_fill(new_start,start,val);
 				start = new_start;
 			}else if(pos.cur == finish.cur){
-				iterator new_finish = __reserve_elements_at_back(n);
+				iterator new_finish =this-> __reserve_elements_at_back(n);
 				uninitialized_fill(finish,new_finish,val);
 				finish = new_finish;
 			}else{
@@ -296,9 +299,9 @@ namespace jinstl {
 		}
 		
 		iterator erase(iterator pos1,iterator pos2){
-			if(first == pos1&&finish==pos2){
+			if(start == pos1&&finish==pos2){
 				clear();
-				return first;
+				return start;
 			}
 			else{
 				difference_type n = pos2-pos1;
@@ -308,7 +311,7 @@ namespace jinstl {
 					iterator new_start = start+n;
 					destroy(start,new_start);
 					for(T** cur=start.node;cur<new_start.node;cur++){
-						data_allocator::deallocate(*cur,buf_size());
+						data_allocator::deallocate(*cur,buffer_size());
 					}
 					start=new_start;
 				}else{
@@ -316,15 +319,15 @@ namespace jinstl {
 					iterator new_finish=finish-n;
 					destroy(new_finish+1,finish);
 					for(T** cur = new_finish+1;cur<=finish;cur++){
-						data_allocator::deallocate(*cur,buf_size());
+						data_allocator::deallocate(*cur,buffer_size());
 
 					}
 					finish = new_finish;
 					
 				}
 				
+				return start+ele_before;
 			}
-			return start+ele_before;
 			
 		}
 
@@ -332,14 +335,14 @@ namespace jinstl {
 
 		void clear(){
 			for(T** tmp = start.node+1;tmp<finish.node;tmp++){
-				destroy(*tmp,*tmp+buff_size());
-				data_allocator::deallocate(*tmp,buf_size());
+				destroy(*tmp,*tmp+buffer_size());
+				data_allocator::deallocate(*tmp,buffer_size());
 			}
 			if(start.node == finish.node) destroy(start.cur,finish.cur);
 			else{
 				destroy(start.cur,start.finish);
 				destroy(finish.first,finish.cur);
-				data_allocator::deallocate(finsih.first,buffer_size());
+				data_allocator::deallocate(finish.first,buffer_size());
 			}
 			finish =start;
 
@@ -358,16 +361,16 @@ namespace jinstl {
 			if(start.cur==start.first){
 				__push_front_aux(x);
 			}else{
-				construct(start.cur,x);
-				start.cur--;
+				construct(--start.cur,x);
+				//start.cur--;
 			}
 		}
 		void pop_back(){
-			if(finish.cur == finish.first) __pop_back_aux();
+			if(finish.cur == finish.first) this->__pop_back_aux();
 			else destroy(--finish.cur);
 		}
 		void pop_front(){
-			if(start.cur == start.last-1) __pop_front_aux();
+			if(start.cur == start.last-1) this->__pop_front_aux();
 			else destroy(start.cur++);
 		}
 		void resize(size_type new_size, const T& val){
@@ -377,31 +380,31 @@ namespace jinstl {
 				erase(start+new_size,finish);
 			}
 		}
-		void resize(size_type new_size){ resize(new_size,T());
+		void resize(size_type new_size){ resize(new_size,T());}
 		void swap(deque& rhs){
 			swap(*this,rhs);
 		}
 
-	protected:
-		T* __allocate_node(){return data_allocator::allocate(buf_size());}
-		void __deallocate_node(T* node){data_allocator::deallocate(node,buf_size());}
+	private:
+		T* __allocate_node(){return data_allocator::allocate(buffer_size());}
+		void __deallocate_node(T* node){data_allocator::deallocate(node,buffer_size());}
 		void __create_map_and_nodes(size_type ele_num){
-			size_type node_num = ele_num/buf_size()+1;
-			map_size = max(initial_map_size,node_num+2);
+			size_type node_num = ele_num/buffer_size()+1;
+			map_size = max((int)initial_map_size,(int)node_num+2);
 			map = map_allocator::allocate(map_size);
 			T** map_start = map+(map_size-node_num)/2;//start at the middle
 			T** map_finish = map_start+node_num-1;
 			T** cur;
 			try{
 				for(cur = map_start;cur<=map_finish;cur++){
-					//*cur = data_allocator::allocate(buf_size());//allocate every buf
+					//*cur = data_allocator::allocate(buffer_size());//allocate every buf
 					*cur = __allocate_node();
 				}	
 				
 			}catch(...){
 				for(T** tmp=map_start;tmp<=cur;tmp++){
-					//data_allocator::deallocate(*tmp,buf_size());//deallocate every alloced buf
-					_deallocate_node(*tmp);
+					//data_allocator::deallocate(*tmp,buffer_size());//deallocate every alloced buf
+					__deallocate_node(*tmp);
 				}
 				map_allocator::deallocate(map,map_size);//deallocate the map
 				throw;
@@ -409,11 +412,11 @@ namespace jinstl {
 			start.set_node(map_start);
 			finish.set_node(map_finish);
 			start.cur = start.first;
-			finish.cur=finish.first+ele_num%buf_size();
+			finish.cur=finish.first+ele_num%buffer_size();
 		}
 		void __destroy_map_and_nodes(){
 			for(T** tmp = start.node;tmp<finish.node;tmp++){
-				//data_allocator::deallocate(*tmp,buf_size());//deallocate buf
+				//data_allocator::deallocate(*tmp,buffer_size());//deallocate buf
 				__deallocate_node(*tmp);
 			}
 			map_allocator::deallocate(map,map_size);//deallocate map
@@ -421,18 +424,18 @@ namespace jinstl {
 			
 			
 		void __fill_initialize(size_type n, const T& val){
-			__create_map_and_nodes(n);
+			this->__create_map_and_nodes(n);
 			T** tmp;
 			try{
 				for(tmp = start.node;tmp<finish.node;tmp++){
-					uninitialize_fill(*tmp,*tmp+buf_size(),val);
+					uninitialize_fill(*tmp,*tmp+buffer_size(),val);
 				}
 				uninitialize_fill(finish.first,finish.cur,val);//finish not full
 			}catch(...){
 				for(T** t = start.node;t<=tmp.node;t++){
-					destroy(*t,buf_size());
+					destroy(*t,buffer_size());
 				}
-				__destroy_map_and_nodes();
+				this->__destroy_map_and_nodes();
 			}	
 		}
 		/*template <class InputIterator>
@@ -485,7 +488,7 @@ namespace jinstl {
 		iterator __insert_aux(iterator pos,size_type n,const T& val){
 			difference_type ele_before = pos - start;
 			if(ele_before<size()/2){//left half
-				iterator new_start = __reserve_elements_at_front(n);
+				iterator new_start = this->__reserve_elements_at_front(n);
 				iterator old_start = start;
 				pos = start+ele_before;
 				try{
@@ -502,14 +505,14 @@ namespace jinstl {
 					}
 						
 				}catch(...){
-					destroy_nodes_at_front(new_start);
+					__destroy_nodes_at_front(new_start);
 					throw;
 					
 				}	
 				
 				
 			}else{//right half
-				iterator new_finish = __reserve_elements_at_back(n);
+				iterator new_finish = this->__reserve_elements_at_back(n);
 				iterator old_finish = finish;
 				const difference_type ele_after = size()-ele_before;
 				pos =finish - ele_after;
@@ -521,14 +524,14 @@ namespace jinstl {
 						copy_backward(pos,finish_n,old_finish);
 						fill(pos,pos+n,val);	
 					}else{
-						_uninitialized_fill_copy(finish,pos+n,val,pos,finish);
+						__uninitialized_fill_copy(finish,pos+n,val,pos,finish);
 						finish = new_finish;
 						fill(pos,old_finish,val);
 						
 					}
 				}catch(...){
 
-					__destroy_node_at_back(new_finish);
+					__destroy_nodes_at_back(new_finish);
 					throw;
 				}
 			}
@@ -546,7 +549,7 @@ namespace jinstl {
 	//	}
 		//when finish.cur = finish.last - 1,then buf which finish.node point to is full	
 		void __push_back_aux(const T& x){
-			__reserve_map_at_back();
+			this->__reserve_map_at_back();
 			*(finish.node+1) = __allocate_node();
 			try{
 				construct(finish.cur,x);
@@ -560,12 +563,13 @@ namespace jinstl {
 		}
 		//start.cur == start.first,then is full
 		void __push_front_aux(const T& x){
-			__reserve_map_at_front();
+			this->__reserve_map_at_front();
 			*(start.node - 1)=__allocate_node();
 			try{
 				start.set_node(start.node-1);
-				construct(start.last-1,x);
+				
 				start.cur = start.last -1;
+				construct(start.cur,x);
 			}catch(...){
 				start.set_node(start.node+1);
 				start.cur=start.first;
@@ -602,7 +606,7 @@ namespace jinstl {
 			return start-n;
 
 		}
-		iteraotr __reserve_elements_at_back(size_type n){
+		iterator __reserve_elements_at_back(size_type n){
 			size_type vacany = finish.last-finish.cur-1;
 			if(n>vacany) __new_elements_at_back(n-vacany);
 			return finish + n;
@@ -610,30 +614,30 @@ namespace jinstl {
 		}
 
 		void __new_elements_at_front(size_type new_elements){
-			size_type new_nodes = (new_elements+buffer_size())/buff_size();
-			__reserve_map_at_front(new_nodes);
+			size_type new_nodes = (new_elements+buffer_size())/buffer_size();
+			this->__reserve_map_at_front(new_nodes);
 			size_type i;
 			try{
 				for(i=1;i<=new_nodes;i++)
 					*(start.node-i)=__allocate_node();
 			}catch(...){
 				for(size_type j=1;j<i;++j)
-					_deallocate_node(*(start.node-j));
+					__deallocate_node(*(start.node-j));
 				throw;
 			}
 
 
 		}
 		void __new_elements_at_back(size_type new_elements){
-			size_type new_nodes = (new_elements+buffer_size())/buff_size();
-			__reserve_map_at_back(new_nodes);
+			size_type new_nodes = (new_elements+buffer_size())/buffer_size();
+			this->__reserve_map_at_back(new_nodes);
 			size_type i;
 			try{
 				for(i=1;i<=new_nodes;i++)
 					*(finish.node+i)=__allocate_node();//allocate buf
 			}catch(...){
 				for(size_type j=1;j<i;++j)
-					_deallocate_node(*(finish.node+j));//deallocate buf
+					__deallocate_node(*(finish.node+j));//deallocate buf
 				throw;
 			}
 			
@@ -643,20 +647,20 @@ namespace jinstl {
 
 		void __destroy_nodes_at_front(iterator before_start){
 			for(T** tmp = before_start.node;tmp<start.node;tmp++){
-				__deallocate(*tmp);
+				__deallocate_node(*tmp);
 			}
 
 		}
 
 		void __destroy_nodes_at_back(iterator after_finish){
 			for(T** tmp = after_finish.node;tmp>finish.node;tmp--){
-				__deallocate(*tmp)
+				__deallocate_node(*tmp);
 			}
 			
 		}
 		
 		void __reserve_map_at_back(size_type nodes_to_add =1){
-			if(nodes_to_add+1>map_size-(finish.node-map))P
+			if(nodes_to_add+1>map_size-(finish.node-map)){
 				__reallocate_map(nodes_to_add,false);
 			}
 
@@ -679,7 +683,7 @@ namespace jinstl {
 					copy_backward(start.node,finish.node+1,new_nstart+old_num_nodes);
 				}
 			}else{
-				size_type new_map_size = map_size+max(map_size,nodes_to_add)+2;
+				size_type new_map_size = map_size+jinstl::max((int)map_size,(int)nodes_to_add)+2;
 				T** new_map = map_allocator::allocate(new_map_size);
 				new_nstart=new_map+(new_map_size-new_num_nodes)/2+(add_at_front?nodes_to_add:0);
 				copy(start.node,finish.node+1,new_nstart);
@@ -695,6 +699,14 @@ namespace jinstl {
 	};
 
 	/**********************************************************************************/
+	template<class T,class Alloc,size_t bufsize>
+	inline bool operator==(const deque<T,Alloc,bufsize>& v1,const deque<T,Alloc,bufsize>&v2){
+		return v1.size()==v2.size() && equal(v1.begin(),v1.end(),v2.begin());
+	}		
+	template<class T,class Alloc,size_t bufsize>
+	inline bool operator<(const deque<T,Alloc,bufsize>&v1,const deque<T,Alloc,bufsize>&v2){
+		return lexicographical_compare(v1.begin(),v1.end(),v2.begin(),v2.end());
+	}
 	template<class T>
 	void swap(deque<T>&q1,deque<T>&q2){
 		swap(q1.start,q2.start);
