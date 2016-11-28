@@ -4,7 +4,7 @@
 #include"iterator.h"
 namespace jinstl{
 
-
+//up operator
 template<class RandomAccessIterator,class Distance,class T>
 void __push_heap(RandomAccessIterator first,Distance holeIndex,Distance topIndex,T value){
 	Distance parentIndex = (holeIndex-1)/2;
@@ -49,10 +49,10 @@ void push_heap(RandomAccessIterator first ,RandomAccessIterator last,Compare com
 // down the unsuitable element
 template<class RandomAccessIterator,class Distance,class T>
 void __adjust_heap(RandomAccessIterator first,Distance holeIndex,Distance len,T value){
-	Distance childIndex = holeIndex*2+2;
+	Distance childIndex = holeIndex*2+2,topIndex = holeIndex;
 
 	while(childIndex<len){
-		if(*(first+childIndex)<*(first+childIndex-1)) childIndex--;
+		if(*(first+childIndex)<*(first+(childIndex-1))) childIndex--;
 		*(first+holeIndex)=*(first+childIndex);
 		holeIndex = childIndex;
 		childIndex = 2*holeIndex+2;
@@ -61,7 +61,8 @@ void __adjust_heap(RandomAccessIterator first,Distance holeIndex,Distance len,T 
 		*(first+holeIndex)=*(first+(childIndex-1));
 		holeIndex = childIndex -1;
 	}
-	*(first+holeIndex)=value;
+	//*(first+holeIndex)=value;
+	 __push_heap(first, holeIndex, topIndex, value);
 }
 
 template<class RandomAccessIterator,class T,class Distance>
@@ -80,7 +81,7 @@ void pop_heap(RandomAccessIterator first,RandomAccessIterator last){
 
 template<class RandomAccessIterator,class Distance,class T,class Compare>
 void __adjust_heap(RandomAccessIterator first,Distance holeIndex,Distance len,T value,Compare com){
-	Distance childIndex = holeIndex*2+2;
+	Distance childIndex = holeIndex*2+2,topIndex = holeIndex;;
 
 	while(childIndex<len){
 		if(com(*(first+childIndex),*(first+childIndex-1))) childIndex--;
@@ -92,7 +93,8 @@ void __adjust_heap(RandomAccessIterator first,Distance holeIndex,Distance len,T 
 		*(first+holeIndex)=*(first+(childIndex-1));
 		holeIndex = childIndex -1;
 	}
-	*(first+holeIndex)=value;
+	//*(first+holeIndex)=value;
+	__push_heap(first, holeIndex, topIndex, value,com);
 }
 template<class RandomAccessIterator,class T,class Distance,class Compare>
 void __pop_heap(RandomAccessIterator first,RandomAccessIterator last,RandomAccessIterator result,T value,Distance*,Compare com){
@@ -146,7 +148,7 @@ void make_heap(RandomAccessIterator first,RandomAccessIterator last,Compare com)
 template<class RandomAccessIterator>
 void sort_heap(RandomAccessIterator first,RandomAccessIterator last){
 	//make_heap(first,last);
-	while(first!=last){
+	while(first!=last-1){
 		pop_heap(first,last);
 		last--;
 	}
@@ -156,7 +158,7 @@ void sort_heap(RandomAccessIterator first,RandomAccessIterator last){
 
 template<class RandomAccessIterator,class Compare>
 void sort_heap(RandomAccessIterator first,RandomAccessIterator last,Compare com){
-	while(first!=last){
+	while(first!=last-1){
 		pop_heap(first,last,com);
 		last--;
 	}
