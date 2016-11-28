@@ -132,6 +132,13 @@ namespace jinstl{
 			explicit vector(size_type n){
 				fill_initialize(n,T());
 			}
+			vector(const_iterator first,const_iterator last){
+				size_type n=0;
+				n=distance(first,last);
+				start = allocate_and_copy(n,first,last);
+				finish = start+n;
+				end_of_storage=finish;
+			}
 			~vector(){
 				destroy(start,finish);//a global function,call destruct function
 				deallocate();

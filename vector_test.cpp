@@ -14,6 +14,8 @@ int main(){
 	out(v);
 	for(int i=0;i<10;i++) v.push_back(9-i);
 	out(v);
+	int a[]={1,2,3,4,5,6,7,8,9};
+	vector<int> v3(a,a+9);out(v3);
 	return 0;	
 
 }
