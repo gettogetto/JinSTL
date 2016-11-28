@@ -2,6 +2,7 @@
 #define JIN_HEAP_H_
 #include"type_traits.h"
 #include"iterator.h"
+#include"algobase.h"
 namespace jinstl{
 
 //up operator
@@ -47,7 +48,7 @@ void push_heap(RandomAccessIterator first ,RandomAccessIterator last,Compare com
 }
 /**********************************************/
 // down the unsuitable element
-template<class RandomAccessIterator,class Distance,class T>
+/*template<class RandomAccessIterator,class Distance,class T>
 void __adjust_heap(RandomAccessIterator first,Distance holeIndex,Distance len,T value){
 	Distance childIndex = holeIndex*2+2,topIndex = holeIndex;
 
@@ -63,11 +64,24 @@ void __adjust_heap(RandomAccessIterator first,Distance holeIndex,Distance len,T 
 	}
 	//*(first+holeIndex)=value;
 	 __push_heap(first, holeIndex, topIndex, value);
+}*/
+// down the unsuitable element
+template<class RandomAccessIterator,class Distance,class T>
+void __adjust_heap(RandomAccessIterator first,Distance holeIndex,Distance len,T value){
+	Distance childIndex = holeIndex*2+1;
+
+	while(childIndex<len){
+		if(childIndex+1<len&&*(first+childIndex)<*(first+(childIndex+1))) childIndex++;
+		if(*(first+holeIndex)<*(first+childIndex)) swap(*(first+holeIndex),*(first+childIndex));
+		holeIndex = childIndex;
+		childIndex = 2*holeIndex+1;
+	}
+
 }
 
 template<class RandomAccessIterator,class T,class Distance>
 void __pop_heap(RandomAccessIterator first,RandomAccessIterator last,RandomAccessIterator result,T value,Distance*){
-	*result = *first;
+	swap(*result ,*first);
 	__adjust_heap(first,Distance(0),Distance(last-first),value);
 
 }
@@ -79,7 +93,7 @@ void pop_heap(RandomAccessIterator first,RandomAccessIterator last){
 
 /********************************************************/
 
-template<class RandomAccessIterator,class Distance,class T,class Compare>
+/*template<class RandomAccessIterator,class Distance,class T,class Compare>
 void __adjust_heap(RandomAccessIterator first,Distance holeIndex,Distance len,T value,Compare com){
 	Distance childIndex = holeIndex*2+2,topIndex = holeIndex;;
 
@@ -95,10 +109,24 @@ void __adjust_heap(RandomAccessIterator first,Distance holeIndex,Distance len,T 
 	}
 	//*(first+holeIndex)=value;
 	__push_heap(first, holeIndex, topIndex, value,com);
+}*/
+
+// down the unsuitable element
+template<class RandomAccessIterator,class Distance,class T,class Compare>
+void __adjust_heap(RandomAccessIterator first,Distance holeIndex,Distance len,T value,Compare com){
+	Distance childIndex = holeIndex*2+1;
+
+	while(childIndex<len){
+		if(childIndex+1<len&&com(*(first+childIndex),*(first+(childIndex+1)))) childIndex++;
+		if(com(*(first+holeIndex),*(first+childIndex))) swap(*(first+holeIndex),*(first+childIndex));
+		holeIndex = childIndex;
+		childIndex = 2*holeIndex+1;
+	}
+
 }
 template<class RandomAccessIterator,class T,class Distance,class Compare>
 void __pop_heap(RandomAccessIterator first,RandomAccessIterator last,RandomAccessIterator result,T value,Distance*,Compare com){
-	*result = *first;
+	swap(*result , *first);
 	__adjust_heap(first,Distance(0),Distance(last-first),value,com);
 
 }
@@ -162,7 +190,6 @@ void sort_heap(RandomAccessIterator first,RandomAccessIterator last,Compare com)
 		pop_heap(first,last,com);
 		last--;
 	}
-
 }
 
 
