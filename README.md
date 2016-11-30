@@ -1,2 +1,2 @@
 # JinSTL
-A tiny C++ STL.
+A C++ STL.
