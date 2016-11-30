@@ -9,7 +9,7 @@ namespace jinstl{
 template<class RandomAccessIterator,class Distance,class T>
 void __push_heap(RandomAccessIterator first,Distance holeIndex,Distance topIndex,T value){
 	Distance parentIndex = (holeIndex-1)/2;
-	while(parentIndex>topIndex&&*(first+parentIndex)<value){
+	while(holeIndex>topIndex&&*(first+parentIndex)<value){
 		*(first+holeIndex) = *(first+parentIndex);
 		holeIndex = parentIndex;
 		parentIndex = (holeIndex-1)/2;
@@ -29,7 +29,7 @@ void push_heap(RandomAccessIterator first,RandomAccessIterator last){
 template<class RandomAccessIterator,class Distance,class T,class Compare>
 void __push_heap(RandomAccessIterator first,Distance holeIndex,Distance topIndex,T value,Compare com){
 	Distance parentIndex = (holeIndex-1)/2;
-	while(parentIndex>topIndex&&com(*(first+parentIndex),value)){
+	while(holeIndex>topIndex&&com(*(first+parentIndex),value)){
 		*(first+holeIndex) = *(first+parentIndex);
 		holeIndex = parentIndex;
 		parentIndex = (holeIndex-1)/2;
