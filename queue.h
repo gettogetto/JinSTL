@@ -53,6 +53,9 @@ public:
 	
 
 	priority_queue():_container(){}
+
+	template<class InputIterator>	
+	priority_queue(InputIterator first,InputIterator last):_container(first,last){make_heap(_container.begin(),_container.end());}
 	void push(const T& val){
 		_container.push_back(val);
 		push_heap(_container.begin(),_container.end(),com);
