@@ -14,17 +14,17 @@ public:
 	queue():_container(){}
 	~queue(){}
 	void push(const T& val){
-		_container.insert(_container.begin(),val);
+            _container.insert(_container.end(),val);
 	}
 	T& front(){
-		return *_container.begin();
+            return *(_container.begin());
 	}
 	T& back(){
-		return *(--_container.end());
 
+            return *_container.end();
 	}
 	void pop(){
-		_container.erase(_container.begin());
+            _container.pop_front();
 	}
 
 	bool empty(){return _container.empty();}

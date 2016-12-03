@@ -246,7 +246,7 @@ template <class T, class Alloc = alloc>
 		void swap(list& rhs) { jinstl::swap(m_node, rhs.m_node); }
 
 		
-		//move [first,last) to [pos-(last-first),pos ),and [first last) will be empty
+		
 		void splice(iterator pos, list& alist){
 			if(!alist.empty()) __transfer(pos,alist.begin(),alist.end());			
 			
@@ -255,7 +255,7 @@ template <class T, class Alloc = alloc>
 			if(pos.m_node!=i.m_node&&pos.m_node!=i.m_node->next) 
 				__transfer(pos,iterator(i.m_node),iterator(i.m_node->next));
 		}
-
+//move [first,last) to [pos-(last-first),pos ),and [first last) will be empty
 		void splice(iterator pos, list& x, iterator first, iterator last){
 			if(first!=last) __transfer(pos,first,last);
 		}
