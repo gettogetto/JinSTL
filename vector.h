@@ -157,6 +157,22 @@ namespace jinstl{
 			}
 			void resize(size_type newsize){
 				resize(newsize,T());
+			
+			}
+
+			//must copy to a new memory firstly,and then deallocate the old memory.
+			void shrink_to_fit(){
+				//if(finish==end_of_storage) return;
+				//data_allocator::deallocate(finish,end_of_storage-finish);
+				//end_of_storage = finish;
+				//method above is wrong!!!
+				T* new_start = static_cast<T*>(data_allocator::allocate(size()));
+				T* new_finish = static_cast<T*>(uninitialized_copy(start,finish,new_start));
+				data_allocator::deallocate(start,capacity());
+				start = new_start;
+				finish = new_finish;
+				end_of_storage = finish;
+				
 			}
 			void reserve(size_type n){
 				if(n<capacity()) return;
@@ -184,7 +200,7 @@ namespace jinstl{
 				size_type n = pos-begin();
 				if(pos==finish&&finish!=end_of_storage){
 					construct(finish,val);
-				
+					++finish;
 				}else{
 					insert_aux(pos,val);
 				}
