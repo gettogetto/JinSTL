@@ -16,6 +16,20 @@ int main(){
 	out(v);
 	int a[]={1,2,3,4,5,6,7,8,9};
 	vector<int> v3(a,a+9);out(v3);
+
+	std::cout<<"shrink_to_fit"<<std::endl;
+	vector<int>v4;
+	v4.reserve(10);
+	std::cout<<v4.capacity()<<std::endl;
+	v4.push_back(1);
+	v4.shrink_to_fit();
+	std::cout<<v4.capacity()<<std::endl;
+
+	std::cout<<"++++++++++"<<std::endl;
+
+	vector<int>v5(a,a+3),v6(a,a+4);
+	v5.insert(v5.end(),v6.begin(),v6.end());
+	out(v5);
 	return 0;	
 
 }

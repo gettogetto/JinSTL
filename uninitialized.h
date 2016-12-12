@@ -7,7 +7,7 @@
 #include "algobase.h"
 namespace jinstl{
 
-
+//fully constructed copies of the elements into a range of uninitialized memory 
 
 
 	template<class 	InputIterator,class ForwardIterator>

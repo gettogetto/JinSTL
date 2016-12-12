@@ -21,5 +21,9 @@ int main(){
 	jinstl::list<int> l4(a,a+6);
 	jinstl::list<int> l5(a,a+6);
 	std::cout<<(l4==l5)<<std::endl;
+	std::cout<<"==============================="<<std::endl;
+	jinstl::list<int> l6;
+	for(int i=0;i<10;i++) l6.push_front(i);
+	out(l6);
 
 }
