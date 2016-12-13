@@ -95,7 +95,7 @@ public:
     }
 
     void makeEdge(const Index& i1,const Index& i2){
-        auto node1=getNode(i1);
+       // auto node1=getNode(i1);
         auto node2=getNode(i2);
         for(auto it=_nodes.begin();it!=_nodes.end();it++){
             if((it->first).first==i1){
