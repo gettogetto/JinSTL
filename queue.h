@@ -21,7 +21,7 @@ public:
 	}
 	T& back(){
 
-            return *_container.end();
+            return *--_container.end();
 	}
 	void pop(){
             _container.pop_front();
