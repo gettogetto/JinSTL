@@ -1,29 +1,62 @@
 #include"list.h"
+#include"testLib.h"
 #include<iostream>
 #include<list>
-#define out(l) 	std::cout<<#l<<": "; for(auto i:l) std::cout<<i<<" ";std::cout<<std::endl
-int main(){
-	int a[]={5,4,3,2,1,0},b[]={-1,-2,-3,-4,-5};
-	jinstl::list<int> l1(a,a+6),l2=l1;
-	out(l1);out(l2);
-	l1.splice(l1.begin(),l1,++l1.begin(),l1.end());out(l1);out(l2);
-	l1.insert(l1.begin(),-1);out(l1);
-	l1.erase(l1.begin());out(l1);
-	l1.remove(3);out(l1);
-	l1.sort();out(l1);
-	l1.unique();out(l1);
-	l1.reverse();out(l1);
-	auto l3=l1;l3.sort();l1.sort();
-	l1.merge(l3);out(l1);
-	l1.resize(20,0);out(l1);
-	l1.resize(5);out(l1);
-	
-	jinstl::list<int> l4(a,a+6);
-	jinstl::list<int> l5(a,a+6);
-	std::cout<<(l4==l5)<<std::endl;
-	std::cout<<"==============================="<<std::endl;
-	jinstl::list<int> l6;
-	for(int i=0;i<10;i++) l6.push_front(i);
-	out(l6);
+using namespace jinstl;
+JINTEST(insert){
+    int a[]={1,2,3};
+    jinstl::list<int> l1(a,a+3);
+    std::list<int> l2(a,a+3);
+    EXPECT_CON_EQ(l1,l2);
 
+    l1.insert(l1.begin(),0);
+    l2.insert(l2.begin(),0);
+    EXPECT_CON_EQ(l1,l2);
+
+    l1.insert(l1.end(),2,-1);
+    l2.insert(l2.end(),2,-1);
+    EXPECT_CON_EQ(l1,l2);
+}
+JINTEST(push_pop){
+    int a[]={1,2,3};
+    jinstl::list<int> l1(a,a+3);
+    std::list<int> l2(a,a+3);
+    EXPECT_CON_EQ(l1,l2);
+
+    l1.push_back(1);l2.push_back(1);EXPECT_CON_EQ(l1,l2);
+    l1.push_front(1);l2.push_front(1);EXPECT_CON_EQ(l1,l2);
+    l1.pop_back();l2.pop_back();EXPECT_CON_EQ(l1,l2);
+    l1.pop_front();l2.pop_front();EXPECT_CON_EQ(l1,l2);
+}
+JINTEST(splice){
+    int a[]={1,2,3};
+    jinstl::list<int> l1(a,a+3);
+    std::list<int> l2(a,a+3);
+    int b[]={10,20,30};
+    jinstl::list<int> l3(b,b+3);
+    std::list<int> l4(b,b+3);
+    EXPECT_CON_EQ(l1,l2);
+
+
+    l1.splice(++l1.begin(),l3,l3.begin(),l3.end());
+    l2.splice(++l2.begin(),l4,l4.begin(),l4.end());
+    EXPECT_CON_EQ(l1,l2);
+
+    l1.sort();
+    l2.sort();
+    EXPECT_CON_EQ(l1,l2);
+
+}
+JINTEST(sort){
+    int a[]={1,2,3};
+    jinstl::list<int> l1(a,a+3);
+    std::list<int> l2(a,a+3);
+    l1.sort();
+    l2.sort();
+    EXPECT_CON_EQ(l1,l2);
+}
+
+int main(){
+    RUN_ALL_TESTS();
+    return 0;
 }

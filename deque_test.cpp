@@ -1,20 +1,67 @@
-#include"deque.h"
 #include<iostream>
+#include"deque.h"
+#include<deque>
+#include"testLib.h"
 using namespace jinstl;
-#define out(v) for(int i=0;i<(int)v.size();i++) std::cout<<*(v.begin()+i)<<" ";std::cout<<"   capacity="<<v.size()<<std::endl
+JINTEST(insert){
+    int a[]={1,2,3};
+    jinstl::deque<int> v1(a,a+3);
+    std::deque<int> v2(a,a+3);
+    v1.insert(v1.begin(),0);
+    v2.insert(v2.begin(),0);
+    EXPECT_CON_EQ(v1,v2);
+
+    v1.insert(v1.end(),4);
+    v2.insert(v2.end(),4);
+    EXPECT_CON_EQ(v1,v2);
+
+    v1.insert(v1.end(),6,-1);
+    v2.insert(v2.end(),6,-1);
+    EXPECT_CON_EQ(v1,v2);
+}
+
+JINTEST(erase){
+    int a[]={1,2,3};
+    jinstl::deque<int> v1(a,a+3);
+    std::deque<int> v2(a,a+3);
+    v1.erase(v1.begin());
+    v2.erase(v2.begin());
+    EXPECT_CON_EQ(v1,v2);
+
+    v1.erase(v1.end()-1);
+    v2.erase(v2.end()-1);
+    EXPECT_CON_EQ(v1,v2);
+}
+
+JINTEST(push_and_pop){
+    int a[]={1,2,3};
+    jinstl::deque<int> v1(a,a+3);
+    std::deque<int> v2(a,a+3);
+    v1.push_back(4);
+    v2.push_back(4);
+    EXPECT_CON_EQ(v1,v2);
+
+    v1.pop_back();
+    v2.pop_back();
+    EXPECT_CON_EQ(v1,v2);
+}
+
+
+JINTEST(resize){
+    int a[]={1,2,3};
+    jinstl::deque<int> v1(a,a+3);
+    std::deque<int> v2(a,a+3);
+
+    v1.resize(2);
+    v2.resize(2);
+    EXPECT_CON_EQ(v1,v2);
+
+    v1.resize(5);
+    v2.resize(5);
+    EXPECT_CON_EQ(v1,v2);
+}
+
 int main(){
-	deque<int> q;
-	q.insert(q.begin(),1);
-	out(q);
-
-	int a[]={1,2,3,4};
-	deque<int> q2(a,a+4);
-	out(q2);
-
-	q.insert(q.begin(),5,2);
-	out(q);
-
-	q.push_front(1);
-	out(q);
-
+    RUN_ALL_TESTS();
+    return 0;
 }

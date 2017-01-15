@@ -1,23 +1,23 @@
 #include"stack.h"
+#include"testLib.h"
+#include<stack>
 #include<iostream>
 using namespace jinstl;
+JINTEST(push){
+    jinstl::stack<int> s1;
+    std::stack<int> s2;
+    s1.push(1);
+    s2.push(1);
+    EXPECT_EQ(s1.top(),s2.top());
+    s1.push(2);
+    s2.push(2);
+    EXPECT_EQ(s1.top(),s2.top());
+    s1.pop();
+    s2.pop();
+    EXPECT_EQ(s1.top(),s2.top());
+}
+
 int main(){
-	stack<int> s;
-	s.push(1);
-	s.push(2);
-	s.push(3);
-	s.push(4);
-	s.push(5);
-	std::cout<<s.top()<<std::endl;
-	s.pop();
-	std::cout<<s.top()<<std::endl;
-	s.pop();
-	std::cout<<s.top()<<std::endl;
-	s.pop();
-	std::cout<<s.top()<<std::endl;
-	s.pop();
-	std::cout<<s.top()<<std::endl;
-	s.pop();
-	std::cout<<s.empty()<<std::endl;
-	std::cout<<(s==s)<<std::endl;
+    RUN_ALL_TESTS();
+    return 0;
 }
