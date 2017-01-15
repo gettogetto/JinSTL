@@ -151,7 +151,7 @@ namespace jinstl{
 				}
 				else{
 				
-					insert(start,newsize-size(),val);
+                                        insert(finish,newsize-size(),val);//fixed: change start to finish
 				}
 	
 			}
@@ -189,7 +189,7 @@ namespace jinstl{
 				if(finish!=end_of_storage){
 					construct(finish++,val);
 				}else{
-					insert_aux(finish,val);
+                                        insert_aux(end(),val);
 				}
 			}
 			void pop_back(){
@@ -211,15 +211,15 @@ namespace jinstl{
 				if(n==0) return; 
 				if(n <= end_of_storage-finish){
 					
-					size_type count = finish - pos;
+                                        size_type count = finish - pos;
 					iterator old_finish = finish;
-					if(count>n){
+                                        if(count>=n){
 						uninitialized_copy(finish-n,finish,finish);
 						finish += n;
 						copy_backward(pos,old_finish-n,old_finish);
 						fill(pos,pos+n,val);
 					}else{
-						uninitialized_fill(finish,n-count,val);
+                                                uninitialized_fill_n(finish,n-count,val);
 						finish+=n-count;
 						uninitialized_copy(pos,old_finish,finish);
 						finish +=count;
@@ -228,7 +228,7 @@ namespace jinstl{
 					
 				}else{
 					size_type old_capacity = capacity();
-					size_type new_capacity = old_capacity+(old_capacity>n?old_capacity:n);
+                                        size_type new_capacity = old_capacity+max(n,old_capacity);
 					iterator newstart = data_allocator::allocate(new_capacity);
 					iterator newfinish = newstart;
 				
@@ -236,10 +236,10 @@ namespace jinstl{
 					try{
 						newfinish  = uninitialized_copy(start,pos,newstart);
 						newfinish = uninitialized_fill_n(newfinish,n,val);
-						newfinish = uninitialized_copy(pos,finish,newfinish+n);
+                                                newfinish = uninitialized_copy(pos,finish,newfinish);//fixed:change newfinish+n to newfinish
 					}catch(...){
 						destroy(newstart,newfinish);
-						data_allocator::deallocate(newstart,newstart+new_capacity);
+                                                data_allocator::deallocate(newstart,new_capacity);
 						throw;
 					}
 					destroy(start,finish);
@@ -253,9 +253,9 @@ namespace jinstl{
 				size_type n;
 				n=distance(first,last);
 				if(n==0) return;
-				if(n <= end_of_storage-finish){
+                                if(n <= end_of_storage-finish){
 					
-					size_type count = finish - pos;
+                                        size_type count = finish - pos;
 					iterator old_finish = finish;
 					if(count>n){
 						uninitialized_copy(finish-n,finish,finish);
@@ -263,14 +263,19 @@ namespace jinstl{
 						copy_backward(pos,old_finish-n,old_finish);
 						copy(first,last,pos);
 					}else{
-						finish+=n;
-						uninitialized_copy(pos,old_finish,pos+n);
-						copy(first,last,pos);
+                                                finish+=n;
+                                                uninitialized_copy(pos,old_finish,pos+n);
+                                                copy(first,last,pos);
+                                                //uninitialized_copy(first+count,last,finish);
+                                                //finish+=n-count;
+                                                //uninitialized_copy(pos,old_finish,finish);
+                                                //finish+=count;
+                                                //copy(first,first+count,pos);
 					}
 					
 				}else{
-					size_type old_capacity = capacity();
-					size_type new_capacity = old_capacity+(old_capacity>n?old_capacity:n);
+                                        size_type old_capacity = capacity();
+                                        size_type new_capacity = old_capacity+(old_capacity>n?old_capacity:n);
 					iterator newstart = data_allocator::allocate(new_capacity);
 					iterator newfinish = newstart;
 				

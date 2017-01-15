@@ -1,35 +1,67 @@
 #include<iostream>
 #include"vector.h"
-
-#define out(v) for(int i=0;i<(int)v.size();i++) std::cout<<*(v.begin()+i);std::cout<<"capacity="<<v.capacity()<<std::endl
+#include<vector>
+#include"testLib.h"
 using namespace jinstl;
+JINTEST(insert){
+    int a[]={1,2,3};
+    jinstl::vector<int> v1(a,a+3);
+    std::vector<int> v2(a,a+3);
+    v1.insert(v1.begin(),0);
+    v2.insert(v2.begin(),0);
+    EXPECT_CON_EQ(v1,v2);
+
+    v1.insert(v1.end(),4);
+    v2.insert(v2.end(),4);
+    EXPECT_CON_EQ(v1,v2);
+
+    v1.insert(v1.end(),6,-1);
+    v2.insert(v2.end(),6,-1);
+    EXPECT_CON_EQ(v1,v2);
+}
+JINTEST(erase){
+    int a[]={1,2,3};
+    jinstl::vector<int> v1(a,a+3);
+    std::vector<int> v2(a,a+3);
+    v1.erase(v1.begin());
+    v2.erase(v2.begin());
+    EXPECT_CON_EQ(v1,v2);
+
+    v1.erase(v1.end()-1);
+    v2.erase(v2.end()-1);
+    EXPECT_CON_EQ(v1,v2);
+}
+
+
+JINTEST(push_and_pop){
+    int a[]={1,2,3};
+    jinstl::vector<int> v1(a,a+3);
+    std::vector<int> v2(a,a+3);
+    v1.push_back(4);
+    v2.push_back(4);
+    EXPECT_CON_EQ(v1,v2);
+
+    v1.pop_back();
+    v2.pop_back();
+    EXPECT_CON_EQ(v1,v2);
+}
+
+JINTEST(resize){
+    int a[]={1,2,3};
+    jinstl::vector<int> v1(a,a+3);
+    std::vector<int> v2(a,a+3);
+
+    v1.resize(2);
+    v2.resize(2);
+
+    EXPECT_CON_EQ(v1,v2);
+
+    v1.resize(5);
+    v2.resize(5);
+    EXPECT_CON_EQ(v1,v2);
+}
+
 int main(){
-	vector<int> v(1),v2(10,5);
-	out(v);
-	v.pop_back();
-	out(v);
-	v.insert(v.begin(),7);
-	out(v);
-	v.insert(v.begin(),v2.begin(),v2.end());
-	out(v);
-	for(int i=0;i<10;i++) v.push_back(9-i);
-	out(v);
-	int a[]={1,2,3,4,5,6,7,8,9};
-	vector<int> v3(a,a+9);out(v3);
-
-	std::cout<<"shrink_to_fit"<<std::endl;
-	vector<int>v4;
-	v4.reserve(10);
-	std::cout<<v4.capacity()<<std::endl;
-	v4.push_back(1);
-	v4.shrink_to_fit();
-	std::cout<<v4.capacity()<<std::endl;
-
-	std::cout<<"++++++++++"<<std::endl;
-
-	vector<int>v5(a,a+3),v6(a,a+4);
-	v5.insert(v5.end(),v6.begin(),v6.end());
-	out(v5);
+    RUN_ALL_TESTS();
 	return 0;	
-
 }
