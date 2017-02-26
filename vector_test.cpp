@@ -1,6 +1,7 @@
 #include<iostream>
 #include"vector.h"
 #include<vector>
+#include<functional>
 #include"testLib.h"
 using namespace jinstl;
 JINTEST(insert){
@@ -60,7 +61,20 @@ JINTEST(resize){
     v2.resize(5);
     EXPECT_CON_EQ(v1,v2);
 }
-
+JINTEST(push_back_timecost){
+    const long count=100000000;
+    jinstl::vector<int> v1;
+    std::vector<int> v2;
+    TIMECOST(v1,push_back,rand(),count);
+    TIMECOST(v2,push_back,rand(),count);
+}
+JINTEST(insert_timecost){
+    const long count=100000;
+    jinstl::vector<int> v1;
+    std::vector<int> v2;
+    TIMECOST2(v1,insert,begin,rand(),count);
+    TIMECOST2(v2,insert,begin,rand(),count);
+}
 int main(){
     RUN_ALL_TESTS();
 	return 0;	
