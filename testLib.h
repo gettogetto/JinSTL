@@ -257,4 +257,28 @@ private:
         unitTest::getInstance().run();\
     }while(0)
 
+#define TIMECOST(con,func,val,count)\
+do{\
+    srand((int)time(0));\
+    clock_t start, end;\
+    start = clock();\
+    for(int i=0;i<count;i++){\
+        con.func(val);\
+    }\
+    end=clock();\
+    std::cout<<#func<<" time use:"<<int(end-start)/CLOCKS_PER_SEC * 1000<<"ms"<<std::endl;\
+}while(0)
+
+
+#define TIMECOST2(cond,func,pos,val,count)\
+do{\
+    srand((int)time(0));\
+    clock_t start, end;\
+    start = clock();\
+    for(int i=0;i<count;i++){\
+        cond.func(cond.pos(),val);\
+    }\
+    end=clock();\
+    std::cout<<#func<<" time use:"<<int(end-start)/CLOCKS_PER_SEC * 1000<<"ms"<<std::endl;\
+}while(0)
 #endif
